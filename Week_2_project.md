@@ -1,63 +1,67 @@
-Week 2 project
-==============
+---
+title: "Habits"
+output:
+  html_document:
+    keep_md: true
+---
 
-Part 1:Loading and processing the data:
----------------------------------------
+#Week 2 project
 
-``` r
+##Part 1:Loading and processing the data:
+
+
+
+```r
 setwd("C:/Users/ahilal/Desktop/Data Science Specialization/Coursera Course 5/Week 2 assignment")
 library(ggplot2)
 unzip("activity.zip")
 dataset <- read.csv("activity.csv")
 ```
+##Part 2: Finding the mean total number of steps taken per day:
+###Calculating the total number of steps taken per day:
 
-Part 2: Finding the mean total number of steps taken per day:
--------------------------------------------------------------
-
-### Calculating the total number of steps taken per day:
-
-``` r
+```r
 TotalStepsPerday <- aggregate(steps ~ date, data = dataset,FUN = sum)
 ```
 
-### Drawing a histogram of the total number of steps taken each day
+###Drawing a histogram of the total number of steps taken each day
 
-``` r
+```r
 qplot(steps, data=TotalStepsPerday)
 ```
 
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+![](Figs/unnamed-chunk-3-1.png)<!-- -->
 
-![](Week_2_project_files/figure-markdown_github/unnamed-chunk-3-1.png)
+###The mean of the total number of steps taken each day is:
 
-### The mean of the total number of steps taken each day is:
-
-``` r
+```r
 mean(TotalStepsPerday$steps)
 ```
 
-    ## [1] 10766.19
+```
+## [1] 10766.19
+```
 
-### The median of the total number of steps taken each day is:
+###The median of the total number of steps taken each day is:
 
-``` r
+```r
 median(TotalStepsPerday$steps)
 ```
 
-    ## [1] 10765
+```
+## [1] 10765
+```
 
 ### Seperating NA values
 
-``` r
+```r
 NAvalues <- is.na(dataset$steps)
 ```
 
-Part 3:Average daily dctivity pattern analysis:
------------------------------------------------
+##Part 3:Average daily dctivity pattern analysis:
+###A time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days
 
-### A time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days
-
-``` r
+```r
 Cleandataset <- dataset[!NAvalues,]
 
 Averagesdataset <- aggregate(steps~ interval, Cleandataset,FUN = mean)
@@ -65,116 +69,125 @@ Averagesdataset <- aggregate(steps~ interval, Cleandataset,FUN = mean)
 plot(Averagesdataset$steps,type="l",col="green",lwd=1.5, xlab = "Interval",ylab = "Average number of steps")
 ```
 
-![](Week_2_project_files/figure-markdown_github/unnamed-chunk-7-1.png)
+![](Figs/unnamed-chunk-7-1.png)<!-- -->
 
 ### The 5-minute interval, on average across all the days in the dataset, containing the maximum number of steps:
 
-``` r
+
+```r
 MaxInterval <- Averagesdataset[which.max(Averagesdataset$steps),]
 
 MaxInterval
 ```
 
-    ##     interval    steps
-    ## 104      835 206.1698
+```
+##     interval    steps
+## 104      835 206.1698
+```
 
-Part 4: Missing values:
------------------------
+##Part 4: Missing values:
+###The total number of missing values is
 
-### The total number of missing values is
 
-``` r
+```r
 sum(NAvalues)
 ```
 
-    ## [1] 2304
+```
+## [1] 2304
+```
 
-### Mergin with the original data set matching the average number of steps with the intervals
+###Mergin with the original data set matching the average number of steps with the intervals
 
-``` r
+```r
 names(Averagesdataset)[2] <- "mean.steps"
 
 dataset2 <- merge(dataset,Averagesdataset)
 ```
 
-### replacing the NA values with the average
+###replacing the NA values with the average
 
-``` r
+```r
 dataset2$steps[is.na(dataset2$steps)] <- dataset2$mean.steps[is.na(dataset2$steps)]
 ```
 
-### Calculating the updated total number of steps taken per day:
+###Calculating the updated total number of steps taken per day:
 
-``` r
+```r
 TotalStepsPerday2 <- aggregate(steps ~ date, data = dataset2,FUN = sum)
 ```
 
-### Drawing an upated histogram of the total number of steps taken each day
+###Drawing an upated histogram of the total number of steps taken each day
 
-``` r
+```r
 qplot(steps, data=TotalStepsPerday2)
 ```
 
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+![](Figs/unnamed-chunk-13-1.png)<!-- -->
 
-![](Week_2_project_files/figure-markdown_github/unnamed-chunk-13-1.png)
+###Finding the updated mean and median:
 
-### Finding the updated mean and median:
-
-``` r
+```r
 mean(TotalStepsPerday2$steps)
 ```
 
-    ## [1] 10766.19
+```
+## [1] 10766.19
+```
 
-``` r
+```r
 median(TotalStepsPerday2$steps)
 ```
 
-    ## [1] 10766.19
+```
+## [1] 10766.19
+```
 
-### As shown below the mean does not change but the median does
+###As shown below the mean does not change but the median does
 
-``` r
+```r
 mean(TotalStepsPerday2$steps)-mean(TotalStepsPerday$steps)
 ```
 
-    ## [1] 0
+```
+## [1] 0
+```
 
-``` r
+```r
 median(TotalStepsPerday2$steps) - median(TotalStepsPerday$steps)
 ```
 
-    ## [1] 1.188679
+```
+## [1] 1.188679
+```
 
-Part 5: Weekdays vs weekends:
------------------------------
+##Part 5: Weekdays vs weekends:
 
-### finding the day:
+###finding the day:
 
-``` r
+```r
 dataset2$weekdays <- weekdays(as.Date(dataset2$date))
 ```
 
-### Splitting between weekend and weekday
+###Splitting between weekend and weekday
 
-``` r
+```r
 dataset2$weekdays <- ifelse(dataset2$weekdays == "Sunday" | dataset2$weekdays == "Saturday", "Weekend","Weekday")
 ```
 
-### Finding the means and splitting between Weekdays and Weekends
+###Finding the means and splitting between Weekdays and Weekends
 
-``` r
+```r
 AveragesdatasetWeekdays <- aggregate(steps ~ interval + weekdays,dataset2, FUN = mean)
 ```
 
-### Plotting the 2 graphs:
+###Plotting the 2 graphs:
 
-``` r
+```r
 ggplot(AveragesdatasetWeekdays, aes(x = interval, y=steps, color=weekdays)) +
   geom_line() +
   facet_grid(weekdays ~ .) +
   labs(title = "Mean of Steps by Interval", x = "interval", y = "steps")
 ```
 
-![](Week_2_project_files/figure-markdown_github/unnamed-chunk-19-1.png)
+![](Figs/unnamed-chunk-19-1.png)<!-- -->
